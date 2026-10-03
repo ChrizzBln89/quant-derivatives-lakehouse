@@ -3,12 +3,14 @@ from quant_lakehouse.utils import load_config
 
 
 def main():
-    config = load_config()
+    # Choose environment manually here: "local", "dev", or "prod"
+    config = load_config("local")
+
     storage_root = config.get("storage_root", "./data/lakehouse")
     bronze_path = f"{storage_root}/bronze"
     tickers = config.get("symbols", ["AAPL", "MSFT", "SPY"])
 
-    print("Running bronze ingestion...")
+    print(f"Running bronze ingestion for environment: {config.get('environment')}")
     ingest_to_bronze(output_path=bronze_path, tickers=tickers)
 
 
