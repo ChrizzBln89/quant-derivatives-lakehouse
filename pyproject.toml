@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant_lakehouse"
+version = "0.1.0"
+description = "Quant Derivatives Lakehouse"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark==3.5.1",
+    "delta-spark==3.2.0",
+    "yfinance>=0.2.40",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "scipy>=1.12.0",
+    "pyyaml>=6.0.1",
+    "duckdb>=1.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["quant_lakehouse*"]

@@ -1,0 +1,61 @@
+resources:
+  jobs:
+    derivatives_pricing_pipeline:
+      name: "[${bundle.target}] derivatives_pricing_pipeline"
+      
+      # Automatische Bereinigung und Alerting
+      timeout_seconds: 3600
+      max_concurrent_runs: 1
+      
+      # Schedule nur in Production aktiv
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "Europe/Berlin"
+        pause_status: "${bundle.target == 'prod' ? 'UNPAUSED' : 'PAUSED'}"
+
+      job_clusters:
+        - job_cluster_key: quant_engine_cluster
+          new_cluster: ${resources.job_clusters.quant_engine_cluster.new_cluster}
+
+      tasks:
+        # Task 1: Ingestion & Raw Landing
+        - task_key: run_bronze
+          job_cluster_key: quant_engine_cluster
+          spark_python_task:
+            python_file: src/entrypoints/run_bronze.py
+            parameters:
+              - "--env"
+              - "${bundle.target}"
+              - "--config"
+              - "${var.config_path}"
+
+        # Task 2: Cleaning & Volatility Calibration
+        - task_key: run_silver
+          depends_on:
+            - task_key: run_bronze
+          job_cluster_key: quant_engine_cluster
+          spark_python_task:
+            python_file: src/entrypoints/run_silver.py
+            parameters:
+              - "--env"
+              - "${bundle.target}"
+              - "--config"
+              - "${var.config_path}"
+
+        # Task 3: Vectorized Arrow UDF Black-Scholes Valuation
+        - task_key: run_gold
+          depends_on:
+            - task_key: run_silver
+          job_cluster_key: quant_engine_cluster
+          spark_python_task:
+            python_file: src/entrypoints/run_gold.py
+            parameters:
+              - "--env"
+              - "${bundle.target}"
+              - "--config"
+              - "${var.config_path}"
+
+      # Benachrichtigungen bei Job-Fehlern
+      email_notifications:
+        on_failure:
+          - "${workspace.current_user.userName}"

@@ -1,0 +1,33 @@
+resources:
+  job_clusters:
+    quant_engine_cluster:
+      job_cluster_key: quant_engine_cluster
+      new_cluster:
+        # Long-Term Support (LTS) Runtime
+        spark_version: 15.4.x-scala2.12
+        node_type_id: Standard_D4ds_v5
+        
+        # Single-Node für kostengünstige Dev-Runs / Tests (oder min_workers: 2 für Cluster)
+        spark_conf:
+          "spark.master": "local[*]"
+          "spark.databricks.cluster.profile": "singleNode"
+          "spark.sql.extensions": "io.delta.sql.DeltaSparkSessionExtension"
+          "spark.sql.catalog.spark_catalog": "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+          # Performance: Apache Arrow für @pandas_udf aktivieren
+          "spark.sql.execution.arrow.pyspark.enabled": "true"
+        
+        custom_tags:
+          "ResourceClass": "SingleNode"
+          "CostCenter": "QuantitativePlatform"
+          "Environment": "${bundle.target}"
+
+        # PyPI-Abhängigkeiten direkt auf den Nodes installieren
+        libraries:
+          - pypi:
+              package: yfinance>=0.2.40
+          - pypi:
+              package: scipy>=1.12.0
+          - pypi:
+              package: pyarrow>=15.0.0
+          - pypi:
+              package: pyyaml>=6.0.1

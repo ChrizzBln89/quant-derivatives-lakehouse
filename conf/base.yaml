@@ -1,0 +1,3 @@
+symbols: ["AAPL", "MSFT", "SPY"]
+risk_free_rate: 0.035
+volatility_lookback_days: 252

@@ -1,0 +1,48 @@
+bundle:
+  name: quant-derivatives-lakehouse
+
+include:
+  - resources/*.yml
+
+# Synchronisations-Filter für den Code-Upload in den Workspace
+sync:
+  exclude:
+    - .git/
+    - .venv/
+    - .pytest_cache/
+    - .ruff_cache/
+    - data/
+    - conf/dev.yaml
+    - tests/
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      # Passe den Host an deine Databricks-URL an
+      host: https://adb-dev-workspace.azuredatabricks.net
+      root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      environment: dev
+      config_path: conf/dev.yaml
+
+  prod:
+    mode: production
+    workspace:
+      host: https://adb-prod-workspace.azuredatabricks.net
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      environment: prod
+      config_path: conf/prod.yaml
+    # Verhindert versehentliche Ad-hoc-Deployments ohne CI/CD
+    run_as:
+      service_principal_name: 00000000-0000-0000-0000-000000000000
+
+variables:
+  environment:
+    description: "Deployment environment target"
+    default: "dev"
+  config_path:
+    description: "Relative path to target config YAML"
+    default: "conf/dev.yaml"
