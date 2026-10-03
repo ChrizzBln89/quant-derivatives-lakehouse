@@ -12,7 +12,6 @@ sync:
     - .pytest_cache/
     - .ruff_cache/
     - data/
-    - conf/dev.yaml
     - tests/
 
 targets:

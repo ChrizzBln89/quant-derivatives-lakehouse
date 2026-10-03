@@ -1,44 +1,28 @@
-import os
 import sys
 import yaml
 from pathlib import Path
 
 
 def load_config() -> dict:
-    """Loads base configuration and merges environment-specific overrides.
+    """Loads the environment configuration file.
 
-    Resolution order:
-    1. Command line argument: --env <env> or --config <path>
-    2. Environment variable: DATABRICKS_ENV or ENVIRONMENT
-    3. Default: 'dev'
+    Defaults to 'conf/local.yaml' unless --env or --config is passed.
     """
-    env = "dev"
-    config_path = None
+    config_path = "conf/local.yaml"
 
-    # Simple check for command-line arguments
     for i, arg in enumerate(sys.argv):
         if arg == "--env" and i + 1 < len(sys.argv):
             env = sys.argv[i + 1]
+            config_path = f"conf/{env}.yaml"
         elif arg == "--config" and i + 1 < len(sys.argv):
             config_path = sys.argv[i + 1]
 
-    # Fallback to environment variables if not specified via CLI
-    if not config_path:
-        env = os.getenv("DATABRICKS_ENV", os.getenv("ENVIRONMENT", env))
-        config_path = f"conf/{env}.yaml"
+    path = Path(config_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
-    # Load base config
-    base_path = Path("conf/base.yaml")
-    config = {}
-    if base_path.exists():
-        with open(base_path, "r") as f:
-            config.update(yaml.safe_load(f) or {})
+    with open(path, "r") as f:
+        config = yaml.safe_load(f) or {}
 
-    # Load env-specific config overrides
-    env_path = Path(config_path)
-    if env_path.exists():
-        with open(env_path, "r") as f:
-            config.update(yaml.safe_load(f) or {})
-
-    config["environment"] = env
+    config["environment"] = path.stem
     return config
