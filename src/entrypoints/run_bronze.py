@@ -8,7 +8,7 @@ def main():
     bronze_path = f"{storage_root}/bronze"
     tickers = config.get("symbols", ["AAPL", "MSFT", "SPY"])
 
-    print(f"Running bronze ingestion for environment: {config.get('environment')}")
+    print("Running bronze ingestion...")
     ingest_to_bronze(output_path=bronze_path, tickers=tickers)
 
 

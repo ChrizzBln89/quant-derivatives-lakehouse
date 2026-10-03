@@ -23,11 +23,6 @@ resources:
           job_cluster_key: quant_engine_cluster
           spark_python_task:
             python_file: src/entrypoints/run_bronze.py
-            parameters:
-              - "--env"
-              - "${bundle.target}"
-              - "--config"
-              - "${var.config_path}"
 
         # Task 2: Cleaning & Volatility Calibration
         - task_key: run_silver
@@ -36,11 +31,6 @@ resources:
           job_cluster_key: quant_engine_cluster
           spark_python_task:
             python_file: src/entrypoints/run_silver.py
-            parameters:
-              - "--env"
-              - "${bundle.target}"
-              - "--config"
-              - "${var.config_path}"
 
         # Task 3: Vectorized Arrow UDF Black-Scholes Valuation
         - task_key: run_gold
@@ -49,11 +39,6 @@ resources:
           job_cluster_key: quant_engine_cluster
           spark_python_task:
             python_file: src/entrypoints/run_gold.py
-            parameters:
-              - "--env"
-              - "${bundle.target}"
-              - "--config"
-              - "${var.config_path}"
 
       # Benachrichtigungen bei Job-Fehlern
       email_notifications:
