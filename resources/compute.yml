@@ -21,6 +21,9 @@ resources:
           "CostCenter": "QuantitativePlatform"
           "Environment": "${bundle.target}"
 
+        environment_variables:
+          ENVIRONMENT: "${bundle.target}"
+
         # PyPI-Abhängigkeiten direkt auf den Nodes installieren
         libraries:
           - pypi:

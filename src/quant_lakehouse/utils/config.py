@@ -1,9 +1,14 @@
+import os
 import yaml
 from pathlib import Path
 
 
-def load_config(env: str = "local") -> dict:
-    """Loads configuration for the specified environment manually ('local', 'dev', 'prod')."""
+def load_config() -> dict:
+    """Loads configuration based on the ENVIRONMENT environment variable.
+
+    Defaults to 'local' if ENVIRONMENT is not set.
+    """
+    env = os.getenv("ENVIRONMENT", "local")
     config_path = Path(f"conf/{env}.yaml")
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_path}")

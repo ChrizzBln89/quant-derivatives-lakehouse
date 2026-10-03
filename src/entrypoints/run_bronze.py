@@ -3,8 +3,7 @@ from quant_lakehouse.utils import load_config
 
 
 def main():
-    # Choose environment manually here: "local", "dev", or "prod"
-    config = load_config("local")
+    config = load_config()
 
     storage_root = config.get("storage_root", "./data/lakehouse")
     bronze_path = f"{storage_root}/bronze"
