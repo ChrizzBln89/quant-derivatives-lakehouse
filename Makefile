@@ -80,7 +80,7 @@ test: lint test-unit test-integration
 # ==============================================================================
 .PHONY: run-bronze
 run-bronze:
-	$(PYTHON) src/entrypoints/run_bronze.py
+	$(PYTHON) src/entrypoints/run_bronze.py --env dev --config conf/dev.yaml
 
 .PHONY: run-silver
 run-silver:
