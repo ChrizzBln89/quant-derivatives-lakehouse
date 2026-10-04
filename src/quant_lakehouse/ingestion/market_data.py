@@ -1,7 +1,7 @@
 from datetime import datetime
-from deltalake import write_deltalake
 import pandas as pd
 import yfinance as yf
+from pyspark.sql import SparkSession
 
 
 def fetch_stock_data(
@@ -24,18 +24,27 @@ def fetch_stock_data(
 
 
 def ingest_to_bronze(
-    output_path: str = "./data/lakehouse/bronze",
+    output_path: str = "default.bronze_derivatives",
     tickers: list[str] = ["AAPL", "MSFT", "SPY"],
 ) -> None:
-    """Fetches stock data and writes it to Delta Lake Bronze layer using deltalake."""
+    """Fetches stock data and writes it to Delta Lake Bronze table or path using Spark Delta writer."""
+    spark = SparkSession.builder.getOrCreate()
     pdf = fetch_stock_data(tickers=tickers)
     if pdf.empty:
         raise ValueError("No data fetched from yfinance.")
 
     pdf["ingested_at"] = datetime.utcnow()
 
-    write_deltalake(output_path, pdf, mode="overwrite")
-    print(f"Successfully ingested {len(pdf)} rows to bronze path: {output_path}")
+    df = spark.createDataFrame(pdf)
+    
+    if "/" in output_path or output_path.startswith("dbfs:") or output_path.startswith("file:"):
+        abs_path = output_path if "://" in output_path else f"file://{output_path}"
+        df.write.format("delta").mode("overwrite").save(abs_path)
+    else:
+        spark.sql("CREATE DATABASE IF NOT EXISTS default")
+        df.write.format("delta").mode("overwrite").saveAsTable(output_path)
+
+    print(f"Successfully ingested {len(pdf)} rows to bronze destination: {output_path}")
 
 
 if __name__ == "__main__":

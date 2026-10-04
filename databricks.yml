@@ -4,9 +4,15 @@ bundle:
 include:
   - resources/*.yml
 
+artifacts:
+  quant_lakehouse_artifact:
+    type: whl
+    build: python -m build --wheel
+
 # Synchronisations-Filter für den Code-Upload in den Workspace
 sync:
   exclude:
+    - .env
     - .git/
     - .venv/
     - .pytest_cache/
@@ -19,8 +25,7 @@ targets:
     default: true
     mode: development
     workspace:
-      # Passe den Host an deine Databricks-URL an
-      host: https://adb-dev-workspace.azuredatabricks.net
+      host: https://dbc-f67052a4-d0c8.cloud.databricks.com
       root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     variables:
       environment: dev
@@ -29,12 +34,11 @@ targets:
   prod:
     mode: production
     workspace:
-      host: https://adb-prod-workspace.azuredatabricks.net
+      host: https://dbc-f67052a4-d0c8.cloud.databricks.com
       root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
     variables:
       environment: prod
       config_path: conf/prod.yaml
-    # Verhindert versehentliche Ad-hoc-Deployments ohne CI/CD
     run_as:
       service_principal_name: 00000000-0000-0000-0000-000000000000
 
