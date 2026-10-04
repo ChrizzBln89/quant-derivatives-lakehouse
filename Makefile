@@ -84,11 +84,11 @@ run-bronze:
 
 .PHONY: run-silver
 run-silver:
-	$(PYTHON) src/entrypoints/run_silver.py --env dev --config conf/dev.yaml
+	$(PYTHON) src/entrypoints/run_silver.py
 
 .PHONY: run-gold
 run-gold:
-	$(PYTHON) src/entrypoints/run_gold.py --env dev --config conf/dev.yaml
+	$(PYTHON) src/entrypoints/run_gold.py
 
 .PHONY: run-local-pipeline
 run-local-pipeline: run-bronze run-silver run-gold

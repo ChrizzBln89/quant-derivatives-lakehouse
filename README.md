@@ -5,10 +5,7 @@ quant-derivatives-lakehouse/
 │   ├── ci.yml                 # Automatisiertes Linting, Typecheck & Pytest
 │   └── deploy.yml             # Databricks Asset Bundle (DAB) Deployment
 │
-├── conf/                      # Konfigurationsdateien (YAML)
-│   ├── base.yaml              # Ticker-Listen, Volatilitäts-Lookbacks, Strikes
-│   ├── dev.yaml               # Lokale Pfade (z. B. ./data/lakehouse)
-│   └── prod.yaml              # Cloud-Pfade (Unity Catalog: catalog.schema.table)
+├── .env                       # Lokale Umgebungsvariablen (für lokale Entwicklung, in .gitignore!)
 │
 ├── databricks.yml             # Hauptkonfiguration für Databricks Asset Bundles
 ├── resources/                 # Deklarative Cloud-Ressourcen (YAML)

@@ -30,10 +30,7 @@ quant-derivatives-lakehouse/
 │       │   └── gold.py            # Gold layer logic
 │       └── utils/                 # Shared utilities
 │           └── spark.py           # Spark session initialization & configs
-├── conf/
-│   ├── base.yaml                  # Base pipeline configuration parameters
-│   ├── dev.yaml                   # Development environment overrides
-│   └── prod.yaml                  # Production environment overrides
+├── .env                       # Local environment variables (excluded from bundle sync)
 └── pyproject.toml                 # Package definition, build system & dependencies
 ```
 
@@ -98,8 +95,8 @@ quant-derivatives-lakehouse/
 
 ### 4. Configuration & Packaging Files
 
-- **`conf/dev.yaml` & `conf/prod.yaml` (and `conf/base.yaml`)**
-  - **Purpose**: Environment-specific configuration parameters (catalog names, schema names, paths, batch sizes) loaded by the entrypoint scripts.
+- **`.env`**
+  - **Purpose**: Local environment variables for offline execution and testing (excluded from workspace synchronization via `sync.exclude`).
 
 - **`pyproject.toml`**
   - **Purpose**: Defines Python package metadata (`quant_lakehouse`), build backend (`setuptools`), and dependency constraints (`pyspark`, `delta-spark`, `pandas`, `numpy`, `scipy`, `yfinance`, `duckdb`). Enables the codebase to be installed as a Python library within Databricks compute environments.
@@ -110,5 +107,5 @@ quant-derivatives-lakehouse/
 
 When running `databricks bundle deploy` (or via CI/CD pipelines in `.github/workflows/`), Databricks Asset Bundles syncs the code to the workspace root path defined in `databricks.yml`. 
 
-- **Excluded from Sync**: `.git/`, `.venv/`, `.pytest_cache/`, `.ruff_cache/`, `data/`, `conf/dev.yaml`, and `tests/` are excluded during workspace synchronization to keep deployments clean and performant.
+- **Excluded from Sync**: `.env`, `.git/`, `.venv/`, `.pytest_cache/`, `.ruff_cache/`, `data/`, and `tests/` are excluded during workspace synchronization to keep deployments clean and performant.
 - **Execution**: Jobs reference Python files directly via relative paths from the workspace root (e.g., `src/entrypoints/run_bronze.py`), leveraging the synced codebase and cluster-installed PyPI libraries.

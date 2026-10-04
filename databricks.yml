@@ -27,25 +27,16 @@ targets:
     workspace:
       host: https://dbc-f67052a4-d0c8.cloud.databricks.com
       root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      environment: dev
-      config_path: conf/dev.yaml
 
   prod:
     mode: production
     workspace:
       host: https://dbc-f67052a4-d0c8.cloud.databricks.com
       root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      environment: prod
-      config_path: conf/prod.yaml
-    run_as:
-      service_principal_name: 00000000-0000-0000-0000-000000000000
+
 
 variables:
   environment:
     description: "Deployment environment target"
     default: "dev"
-  config_path:
-    description: "Relative path to target config YAML"
-    default: "conf/dev.yaml"
+
