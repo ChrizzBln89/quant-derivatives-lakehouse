@@ -1,12 +1,7 @@
 # ==============================================================================
-# CONFIGURATION & ENVIRONMENT
+# CONFIGURATION & ENVIRONMENT (UV)
 # ==============================================================================
 SHELL       := /bin/bash
-VENV        := .venv
-PYTHON      := $(VENV)/bin/python3
-PIP         := $(VENV)/bin/pip
-PYTEST      := $(VENV)/bin/pytest
-RUFF        := $(VENV)/bin/ruff
 TARGET      ?= dev
 JOB_KEY     ?= derivatives_pricing_pipeline
 
@@ -17,20 +12,20 @@ JOB_KEY     ?= derivatives_pricing_pipeline
 # ==============================================================================
 .PHONY: help
 help:
-	@echo "Verfügbare Makefile-Targets:"
+	@echo "Verfügbare Makefile-Targets (uv):"
 	@echo "  Setup & Umgebung:"
-	@echo "    make setup               - Erstellt .venv und installiert Requirements"
+	@echo "    make setup               - Synchronisiert uv Environment und Dependencies"
 	@echo "    make clean               - Entfernt Caches, Build-Artefakte und lokale Daten"
 	@echo ""
 	@echo "  Code Quality & Tests:"
-	@echo "    make lint                - Führt Ruff Linter und Formatter-Check aus"
-	@echo "    make format              - Formatiert Code automatisch mit Ruff"
-	@echo "    make test-unit           - Schnelle Tests der Domain-Logik (NumPy/SciPy)"
-	@echo "    make test-integration    - Integrationstests (Spark & Delta Lake)"
+	@echo "    make lint                - Führt Ruff Linter und Formatter-Check via uv aus"
+	@echo "    make format              - Formatiert Code automatisch mit Ruff via uv"
+	@echo "    make test-unit           - Schnelle Tests der Domain-Logik via uv"
+	@echo "    make test-integration    - Integrationstests (Spark & Delta Lake) via uv"
 	@echo "    make test                - Führt alle Tests aus"
 	@echo ""
 	@echo "  Lokales Lakehouse (Offline Execution):"
-	@echo "    make run-bronze          - Extrahiert Marktdaten in lokale Bronze Delta-Tabelle"
+	@echo "    make run-bronze          - Extrahiert Marktdaten in Landungszone & lokale Bronze Delta-Tabelle"
 	@echo "    make run-silver          - Bereinigt Zeitreihen in lokale Silver Delta-Tabelle"
 	@echo "    make run-gold            - Führt Optionsbewertung aus (Gold Delta-Tabelle)"
 	@echo "    make run-local-pipeline  - Führt Bronze -> Silver -> Gold sequentiell lokal aus"
@@ -50,27 +45,26 @@ help:
 # ==============================================================================
 .PHONY: setup
 setup:
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip setuptools wheel
-	$(PIP) install -r requirements.txt
+	uv sync
+	uv pip install -e .
 
 .PHONY: lint
 lint:
-	$(RUFF) check src/ tests/
-	$(RUFF) format --check src/ tests/
+	uv run ruff check src/ tests/
+	uv run ruff format --check src/ tests/
 
 .PHONY: format
 format:
-	$(RUFF) format src/ tests/
-	$(RUFF) check --fix src/ tests/
+	uv run ruff format src/ tests/
+	uv run ruff check --fix src/ tests/
 
 .PHONY: test-unit
 test-unit:
-	$(PYTEST) tests/unit -v
+	uv run pytest tests/unit -v
 
 .PHONY: test-integration
 test-integration:
-	$(PYTEST) tests/integration -v
+	uv run pytest tests/integration -v
 
 .PHONY: test
 test: lint test-unit test-integration
@@ -80,15 +74,15 @@ test: lint test-unit test-integration
 # ==============================================================================
 .PHONY: run-bronze
 run-bronze:
-	$(PYTHON) src/entrypoints/run_bronze.py
+	uv run python src/entrypoints/run_bronze.py
 
 .PHONY: run-silver
 run-silver:
-	$(PYTHON) src/entrypoints/run_silver.py
+	uv run python src/entrypoints/run_silver.py
 
 .PHONY: run-gold
 run-gold:
-	$(PYTHON) src/entrypoints/run_gold.py
+	uv run python src/entrypoints/run_gold.py
 
 .PHONY: run-local-pipeline
 run-local-pipeline: run-bronze run-silver run-gold
@@ -137,6 +131,6 @@ db-destroy:
 # ==============================================================================
 .PHONY: clean
 clean:
-	rm -rf .pytest_cache .ruff_cache __pycache__
+	rm -rf .venv .pytest_cache .ruff_cache __pycache__
 	find . -type d -name "__pycache__" -exec rm -rf {} +
-	rm -rf data/lakehouse/*
+	rm -rf data/lakehouse/* data/landing_zone/*

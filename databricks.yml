@@ -8,6 +8,7 @@ artifacts:
   quant_lakehouse_artifact:
     type: whl
     build: python -m build --wheel
+    path: .
 
 # Synchronisations-Filter für den Code-Upload in den Workspace
 sync:
@@ -19,6 +20,12 @@ sync:
     - .ruff_cache/
     - data/
     - tests/
+    - build/
+    
+variables:
+  environment:
+    description: "Deployment environment target"
+    default: "dev"
 
 targets:
   dev:
@@ -33,10 +40,3 @@ targets:
     workspace:
       host: https://dbc-f67052a4-d0c8.cloud.databricks.com
       root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
-
-
-variables:
-  environment:
-    description: "Deployment environment target"
-    default: "dev"
-

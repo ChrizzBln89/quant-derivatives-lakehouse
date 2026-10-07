@@ -1,0 +1,91 @@
+# =====================================================================
+# 1. ZENTRALE UMGEBUNGSVARIABLEN (os.environ im Cluster)
+# =====================================================================
+common_env: &default_env
+  CATALOG: "${var.catalog}"
+  SCHEMA_BRONZE: "bronze"
+  SCHEMA_SILVER: "silver"
+  SCHEMA_GOLD: "gold"
+  ENV: "${bundle.target}"
+
+# =====================================================================
+# 2. GOVERNANCE & FINOPS TAGS (Pflicht für Audit & Kostenstellen)
+# =====================================================================
+common_tags: &default_tags
+  CostCenter: "QuantPlatform-1042"
+  ManagedBy: "DatabricksAssetBundles"
+  Owner: "Christoph"
+  Environment: "${bundle.target}"
+
+# =====================================================================
+# 3. SERVERLESS ENVIRONMENT DEFINITIONEN (Dein neues Compute-Menü)
+# =====================================================================
+serverless_templates:
+  # Standard Serverless Python Environment
+  serverless_default: &serverless_env_default
+    environment_key: "default_serverless_env"
+    spec:
+      client: "1"  # Databricks Client Specification
+      spark_env_vars:
+        <<: *default_env
+      # Optionale zusätzliche Libraries für Serverless Tasks
+      dependencies:
+        - "pydantic>=2.0"
+        - "polars>=1.0"
+
+# =====================================================================
+# 4. COMPUTE MENÜ (Wähle Größe nach Anwendungsfall)
+# =====================================================================
+compute_templates:
+  # Tier 1: Single Node (Kein Worker) für reine Python-Skripte / kleine Ingestion
+  single_node: &compute_single_node
+    spark_version: 15.4.x-scala2.12
+    node_type_id: Standard_D4ds_v5
+    custom_tags:
+      <<: *default_tags
+      ComputeTier: "SingleNode"
+    spark_conf:
+      "spark.master": "local[*]"
+      "spark.databricks.cluster.profile": "singleNode"
+    spark_env_vars:
+      <<: *default_env
+
+  # Tier 2: Standard Worker Cluster für PySpark Bronze/Silver Pipelines
+  standard_worker: &compute_standard
+    spark_version: 15.4.x-scala2.12
+    node_type_id: Standard_D4ds_v5
+    num_workers: 2
+    custom_tags:
+      <<: *default_tags
+      ComputeTier: "StandardWorker"
+    spark_env_vars:
+      <<: *default_env
+
+  # Tier 3: Memory-Optimiert mit Autoscaling für komplexe Joins / Simulationen
+  heavy_memory: &compute_heavy
+    spark_version: 15.4.x-scala2.12
+    node_type_id: Standard_E8ds_v5
+    autoscale:
+      min_workers: 2
+      max_workers: 6
+    custom_tags:
+      <<: *default_tags
+      ComputeTier: "HeavyMemory"
+    spark_env_vars:
+      <<: *default_env
+
+# =====================================================================
+# 5. STANDARD TASK- & JOB-POLICIES (Sicherheitsnetze)
+# =====================================================================
+policies:
+  # Verhindert Zombie-Jobs: Bricht nach 1 Stunde automatisch ab
+  standard_timeout: &timeout_1h
+    timeout_seconds: 3600
+    max_retries: 1
+    min_retry_interval_millis: 60000
+
+  # Benachrichtigung bei Abbruch
+  failure_alerts: &alert_on_failure
+    email_notifications:
+      on_failure:
+        - alerts@deinedomain.com
