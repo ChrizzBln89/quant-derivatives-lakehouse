@@ -2,7 +2,6 @@ resources:
   jobs:
     derivatives_pricing_pipeline:
       name: "[${bundle.target}] derivatives_pricing_pipeline"
-      
       timeout_seconds: 3600
       max_concurrent_runs: 1
       
@@ -10,13 +9,6 @@ resources:
         quartz_cron_expression: "0 0 6 * * ?"
         timezone_id: "Europe/Berlin"
         pause_status: PAUSED
-
-      environments:
-        - environment_key: default
-          spec:
-            environment_version: "5"
-            dependencies:
-              - ../dist/*.whl
 
       tasks:
         # Task 1: Ingestion & Raw Landing

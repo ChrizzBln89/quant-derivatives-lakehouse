@@ -30,8 +30,7 @@ serverless_templates:
         <<: *default_env
       # Optionale zusätzliche Libraries für Serverless Tasks
       dependencies:
-        - "pydantic>=2.0"
-        - "polars>=1.0"
+        - ../dist/*.whl
 
 # =====================================================================
 # 4. COMPUTE MENÜ (Wähle Größe nach Anwendungsfall)
